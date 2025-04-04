@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">BLE</string>
+    <string name="connecting_to_device">Connecting to device...</string>
+</resources>
