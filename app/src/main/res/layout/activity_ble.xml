@@ -5,12 +5,6 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-<!--    <TextView-->
-<!--        android:id="@+id/connectionStatus"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="@string/connecting_to_device" />-->
-
     <TextView
         android:id="@+id/heartRateTextView"
         android:layout_width="wrap_content"

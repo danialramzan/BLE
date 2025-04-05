@@ -10,16 +10,13 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -44,13 +41,10 @@ public class BLEActivity extends AppCompatActivity {
         setContentView(R.layout.activity_ble);
 
         heartRateTextView = findViewById(R.id.heartRateTextView);
-
-
-
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         if (bluetoothAdapter == null) {
-            Toast.makeText(this, "Bluetooth is not supported on this device", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Bluetooth is not supported.", Toast.LENGTH_SHORT).show();
             finish();
         }
 
@@ -66,8 +60,9 @@ public class BLEActivity extends AppCompatActivity {
 
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.S)
     private void startScanning() {
+
+        // get necessary permissions
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN)
                 != PackageManager.PERMISSION_GRANTED ||
@@ -86,33 +81,26 @@ public class BLEActivity extends AppCompatActivity {
         }
 
 
-        Log.wtf("GNX", "INIT");
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED
                 || ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-            Log.wtf("GNX", "[PERMISSION ISSUE");
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT},
                     1);
             return;
         }
 
-        Log.wtf("GNX", "A");
-
-        Log.wtf("GNX", "Starting BLE scan...");
         bluetoothAdapter.getBluetoothLeScanner().startScan(new ScanCallback() {
             @Override
             public void onScanResult(int callbackType, ScanResult result) {
-                Log.wtf("GNX", "Scan result received: " + result.getDevice().getName());
                 BluetoothDevice device = result.getDevice();
                 if (device.getName() != null && device.getName().equals("HeartRateSim")) {
-                    Log.wtf("GNX", "YOOOOOOOOOOOOOOOOOOOO");
                     connectToDevice(device);
                 }
             }
 
             @Override
             public void onScanFailed(int errorCode) {
-                Log.e("GNX", "Scan failed with error code: " + errorCode);
+                Log.wtf("GNX", String.valueOf(errorCode));
             }
         });
     }
@@ -120,30 +108,29 @@ public class BLEActivity extends AppCompatActivity {
     private void connectToDevice(BluetoothDevice device) {
         bluetoothGatt = device.connectGatt(this, false, gattCallback);
         if (bluetoothGatt != null) {
-            Log.d("ANX", "connectGatt() called successfully.");
+            Log.wtf("GNX", "connectGatt() called successfully.");
         } else {
-            Log.e("ANX", "Failed to call connectGatt()");
+            Log.wtf("GNX", "Failed to call connectGatt()");
         }
     }
-
 
     BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
 
-            Log.d("GNX", "onConnectionStateChange() called, status: " + status + ", newState: " + newState);
+            Log.wtf("GNX", "onConnectionStateChange() called, status: " + status + ", newState: " + newState);
 
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                Log.d("GNX", "Connected to GATT server.");
+                Log.wtf("GNX", "Connected to GATT server.");
 
-                // After connection, discover services
-                Log.d("GNX", "Starting service discovery...");
+                Log.wtf("GNX", "Starting service discovery...");
                 gatt.discoverServices();
+
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                Log.d("GNX", "Disconnected from GATT server.");
+                Log.wtf("GNX", "Disconnected from GATT server.");
             } else {
-                Log.d("GNX", "Unexpected connection state change, status: " + status + ", newState: " + newState);
+                Log.wtf("GNX", "Unexpected connection state change, status: " + status + ", newState: " + newState);
             }
         }
 
@@ -151,36 +138,36 @@ public class BLEActivity extends AppCompatActivity {
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             super.onServicesDiscovered(gatt, status);
 
-            Log.d("GNX", "onServicesDiscovered() called, status: " + status);
+            Log.wtf("GNX", "onServicesDiscovered() called, status: " + status);
 
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                Log.d("GNX", "Services discovered successfully.");
+                Log.wtf("GNX", "Services discovered successfully.");
 
-                // Log available services
+                // query available services
                 List<BluetoothGattService> services = gatt.getServices();
                 for (BluetoothGattService service : services) {
-                    Log.d("GNX", "Discovered service: " + service.getUuid());
+//                    Log.wtf("GNX", "Discovered service: " + service.getUuid());
 
-                    // Log characteristics for each service
+                    // log characteristics for all services
                     List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
                     for (BluetoothGattCharacteristic characteristic : characteristics) {
-                        Log.d("GNX", "Discovered characteristic: " + characteristic.getUuid());
+                        Log.wtf("GNX", "found characteristic: " + characteristic.getUuid());
                         if (characteristic.getUuid().equals(UUID.fromString("00002A37-0000-1000-8000-00805f9b34fb"))) {
-                            Log.d("GNX", "Heart Rate Measurement characteristic found.");
+                            Log.wtf("GNX", "Heart Rate Measurement characteristic found.");
 
                             // Read the heart rate characteristic
                             boolean success = gatt.readCharacteristic(characteristic);
                             if (success) {
-                                Log.d("GNX", "Started reading Heart Rate Measurement characteristic...");
+                                Log.wtf("GNX", "Started reading HRS characteristic");
                             } else {
-                                Log.e("GNX", "Failed to start reading Heart Rate Measurement characteristic.");
+                                Log.wtf("GNX", "failed HRS char");
                             }
 
                         }
                     }
                 }
             } else {
-                Log.e("GNX", "Failed to discover services, status: " + status);
+                Log.wtf("GNX", "Failed to discover services, status: " + status);
             }
         }
 
@@ -188,38 +175,31 @@ public class BLEActivity extends AppCompatActivity {
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
 
-            Log.d("GNX", "onCharacteristicRead() called, status: " + status + ", characteristic: " + characteristic.getUuid());
+            Log.wtf("GNX", "onCharacteristicRead status: " + status + ", characteristic: " + characteristic.getUuid());
 
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                Log.d("FINALCHAR", "Characteristic read successfully: " + Arrays.toString(characteristic.getValue()));
+                Log.wtf("FINALCHAR", "Characteristic read successfully: " + Arrays.toString(characteristic.getValue()));
                 String heartRateData = Arrays.toString(characteristic.getValue());
                 runOnUiThread(() -> heartRateTextView.setText("Heart Rate: " + heartRateData));
             } else {
-                Log.e("GNX", "Failed to read characteristic, status: " + status);
+                Log.wtf("GNX", "ERROR READING CHAR, status: " + status);
             }
         }
 
-
-        @Override
-        public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-            super.onDescriptorRead(gatt, descriptor, status);
-
-            Log.d("GNX", "onDescriptorRead() called, status: " + status + ", descriptor: " + descriptor.getUuid());
-
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                Log.d("GNX", "Descriptor read successfully.");
-            } else {
-                Log.e("GNX", "Failed to read descriptor, status: " + status);
-            }
-        }
 
 //        @Override
-//        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-//            super.onCharacteristicChanged(gatt, characteristic);
-//            Log.d("GNX", "onCharacteristicChanged() called, characteristic: " + characteristic.getUuid());
-//            Log.d("FINALCHAR", "New characteristic value: " + Arrays.toString(characteristic.getValue()));
+//        public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+//            super.onDescriptorRead(gatt, descriptor, status);
 //
+//            Log.d("GNX", "onDescriptorRead() called, status: " + status + ", descriptor: " + descriptor.getUuid());
+//            if (status == BluetoothGatt.GATT_SUCCESS) {
+//                Log.d("GNX", "Descriptor read successfully.");
+//            } else {
+//                Log.wtf("GNX", "Failed to read descriptor, status: " + status);
+//            }
 //        }
+
+
     };
 
 
