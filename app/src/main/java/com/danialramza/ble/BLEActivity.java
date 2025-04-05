@@ -25,6 +25,7 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -198,6 +199,18 @@ public class BLEActivity extends AppCompatActivity {
                     List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
                     for (BluetoothGattCharacteristic characteristic : characteristics) {
                         Log.d("GNX", "Discovered characteristic: " + characteristic.getUuid());
+                        if (characteristic.getUuid().equals(UUID.fromString("00002A37-0000-1000-8000-00805f9b34fb"))) {
+                            Log.d("GNX", "Heart Rate Measurement characteristic found.");
+
+                            // Read the heart rate characteristic
+                            boolean success = gatt.readCharacteristic(characteristic);
+                            if (success) {
+                                Log.d("GNX", "Started reading Heart Rate Measurement characteristic...");
+                            } else {
+                                Log.e("GNX", "Failed to start reading Heart Rate Measurement characteristic.");
+                            }
+
+                        }
                     }
                 }
             } else {
@@ -212,7 +225,16 @@ public class BLEActivity extends AppCompatActivity {
             Log.d("GNX", "onCharacteristicRead() called, status: " + status + ", characteristic: " + characteristic.getUuid());
 
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                Log.d("GNX", "Characteristic read successfully: " + characteristic.getValue());
+
+                byte[] data = characteristic.getValue();
+
+                // The first byte is the flags byte
+                int flags = data[0];
+                Log.d("GNX", "Flags: " + flags);
+
+                Log.d("GNX", "Characteristic read successfully: " + Arrays.toString(data));
+
+
             } else {
                 Log.e("GNX", "Failed to read characteristic, status: " + status);
             }
@@ -274,38 +296,5 @@ public class BLEActivity extends AppCompatActivity {
     };
 
 
-//    private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
-//        @Override
-//        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-//            Log.wtf("DNX", "PRE");
-//            if (status == BluetoothGatt.GATT_SUCCESS) {
-//                Log.wtf("DNX", "Success");
-//
-//                BluetoothGattService heartRateService = gatt.getService(UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb"));
-//                Log.wtf("DNX", "ABCD");
-//                BluetoothGattCharacteristic heartRateMeasurementCharacteristic = heartRateService.getCharacteristic(UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb"));
-//                Log.wtf("DNX", String.valueOf(heartRateMeasurementCharacteristic.getProperties()));
-//
-////                if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-//////                    // T/ODO: Consider calling
-//////                    //    ActivityCompat#requestPermissions
-//////                    // here to request the missing permissions, and then overriding
-//////                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-//////                    //                                          int[] grantResults)
-//////                    // to handle the case where the user grants the permission. See the documentation
-//////                    // for ActivityCompat#requestPermissions for more details.
-//////                    return;
-////                }
-//                gatt.readCharacteristic(heartRateMeasurementCharacteristic);
-//            }
-//        }
-
-//    public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-//        if (status == BluetoothGatt.GATT_SUCCESS) {
-//            byte[] data = characteristic.getValue();
-//            int heartRate = data[0];
-//            Log.d("HeartRate", "Heart Rate: " + heartRate);
-//        }
-//    }
 }
 
