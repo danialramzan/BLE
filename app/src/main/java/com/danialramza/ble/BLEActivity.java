@@ -10,6 +10,7 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -38,6 +39,7 @@ public class BLEActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ble);
+
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -77,12 +79,6 @@ public class BLEActivity extends AppCompatActivity {
             }, 1);
         }
 
-//            <uses-permission android:name="android.permission.BLUETOOTH"/>
-//    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
-//    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"/>
-//    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
-//    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-//    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
         Log.wtf("GNX", "INIT");
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED
@@ -113,24 +109,6 @@ public class BLEActivity extends AppCompatActivity {
                 Log.e("GNX", "Scan failed with error code: " + errorCode);
             }
         });
-
-
-//        bluetoothAdapter.getBluetoothLeScanner().startScan(new ScanCallback() {
-//            @Override
-//            public void onScanResult(int callbackType, ScanResult result) {
-//                Log.wtf("GNX", "B");
-//                BluetoothDevice device = result.getDevice();
-//                if (device.getName() != null && device.getName().equals("HeartRateSim")) {
-//                    connectToDevice(device);
-//                }
-//                Log.wtf("GNX", "C");
-//            }
-//
-//            @Override
-//            public void onScanFailed(int errorCode) {
-//                Log.e("GNX", "Scan failed with error code: " + errorCode);
-//            }
-//        });
     }
 
     private void connectToDevice(BluetoothDevice device) {
@@ -142,24 +120,6 @@ public class BLEActivity extends AppCompatActivity {
         }
     }
 
-//    private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
-//        @Override
-//        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-//            Log.wtf("DNX", "PRE");
-//            if (status == BluetoothGatt.GATT_SUCCESS) {
-//                Log.wtf("DNX", "Success");
-//
-//                BluetoothGattService heartRateService = gatt.getService(UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb"));
-//                Log.wtf("DNX", "ABCD");
-//                BluetoothGattCharacteristic heartRateMeasurementCharacteristic = heartRateService.getCharacteristic(UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb"));
-//                Log.wtf("DNX", String.valueOf(heartRateMeasurementCharacteristic.getProperties()));
-//
-//
-//                gatt.readCharacteristic(heartRateMeasurementCharacteristic);
-//            } else {
-//                Log.wtf("DNX", "Failure!!");
-//            }
-//        }
 
     BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
         @Override
@@ -225,33 +185,12 @@ public class BLEActivity extends AppCompatActivity {
             Log.d("GNX", "onCharacteristicRead() called, status: " + status + ", characteristic: " + characteristic.getUuid());
 
             if (status == BluetoothGatt.GATT_SUCCESS) {
-
-                byte[] data = characteristic.getValue();
-
-                // The first byte is the flags byte
-                int flags = data[0];
-                Log.d("GNX", "Flags: " + flags);
-
-                Log.d("GNX", "Characteristic read successfully: " + Arrays.toString(data));
-
-
+                Log.d("FINALCHAR", "Characteristic read successfully: " + Arrays.toString(characteristic.getValue()));
             } else {
                 Log.e("GNX", "Failed to read characteristic, status: " + status);
             }
         }
 
-        @Override
-        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            super.onCharacteristicWrite(gatt, characteristic, status);
-
-            Log.d("GNX", "onCharacteristicWrite() called, status: " + status + ", characteristic: " + characteristic.getUuid());
-
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                Log.d("GNX", "Characteristic written successfully.");
-            } else {
-                Log.e("GNX", "Failed to write characteristic, status: " + status);
-            }
-        }
 
         @Override
         public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
@@ -266,33 +205,13 @@ public class BLEActivity extends AppCompatActivity {
             }
         }
 
-        @Override
-        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-            super.onDescriptorWrite(gatt, descriptor, status);
-
-            Log.d("GNX", "onDescriptorWrite() called, status: " + status + ", descriptor: " + descriptor.getUuid());
-
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                Log.d("GNX", "Descriptor written successfully.");
-            } else {
-                Log.e("GNX", "Failed to write descriptor, status: " + status);
-            }
-        }
-
-        @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            super.onCharacteristicChanged(gatt, characteristic);
-
-            Log.d("GNX", "onCharacteristicChanged() called, characteristic: " + characteristic.getUuid());
-            Log.d("GNX", "New characteristic value: " + characteristic.getValue());
-        }
-
-        @Override
-        public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
-            super.onReadRemoteRssi(gatt, rssi, status);
-
-            Log.d("GNX", "onReadRemoteRssi() called, status: " + status + ", RSSI: " + rssi);
-        }
+//        @Override
+//        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+//            super.onCharacteristicChanged(gatt, characteristic);
+//            Log.d("GNX", "onCharacteristicChanged() called, characteristic: " + characteristic.getUuid());
+//            Log.d("FINALCHAR", "New characteristic value: " + Arrays.toString(characteristic.getValue()));
+//
+//        }
     };
 
 
