@@ -16,6 +16,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
@@ -34,11 +35,16 @@ public class BLEActivity extends AppCompatActivity {
 
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothGatt bluetoothGatt;
+    private TextView heartRateTextView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ble);
+
+        heartRateTextView = findViewById(R.id.heartRateTextView);
+
 
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -186,6 +192,8 @@ public class BLEActivity extends AppCompatActivity {
 
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Log.d("FINALCHAR", "Characteristic read successfully: " + Arrays.toString(characteristic.getValue()));
+                String heartRateData = Arrays.toString(characteristic.getValue());
+                runOnUiThread(() -> heartRateTextView.setText("Heart Rate: " + heartRateData));
             } else {
                 Log.e("GNX", "Failed to read characteristic, status: " + status);
             }
